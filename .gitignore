@@ -1,0 +1,10 @@
+.vscode/
+
+.idea/
+*.iml
+
+.env
+.env_temp
+env.js
+
+.serverless/

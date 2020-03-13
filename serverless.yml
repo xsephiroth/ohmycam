@@ -1,0 +1,20 @@
+name: ohmycam
+
+dashboard:
+  component: '@serverless/tencent-website'
+  inputs:
+    code:
+      src: ./dashboard/out
+      index: index.html
+    apigatewayConf:
+      protocols:
+        - https
+
+api:
+  component: '@serverless/tencent-express'
+  inputs:
+    code: ./api
+    functionName: ohmycam-api
+    apigatewayConf:
+      protocols:
+        - https
