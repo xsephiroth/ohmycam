@@ -721,6 +721,11 @@ type-is@~1.6.17, type-is@~1.6.18:
     media-typer "0.3.0"
     mime-types "~2.1.24"
 
+uniqid@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.npm.taobao.org/uniqid/download/uniqid-5.2.0.tgz#0d0589a7e9ce07116848126764fbff0b68e74329"
+  integrity sha1-DQWJp+nOBxFoSBJnZPv/C2jnQyk=
+
 unique-string@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/unique-string/-/unique-string-1.0.0.tgz#9e1057cca851abb93398f8b33ae187b99caec11a"

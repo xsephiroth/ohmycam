@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "scripts": {
     "start": "node app.js",
-    "lint": "prettier --single-quote --write '*.js'"
+    "lint": "prettier --single-quote --write *.js"
   },
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
     "cos-nodejs-sdk-v5": "^2.5.20",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "uniqid": "^5.2.0"
   },
   "devDependencies": {
     "prettier": "^1.19.1"
