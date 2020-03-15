@@ -7,9 +7,7 @@ dashboard:
       src: ./dashboard/out
       index: index.html
     bucketName: 7xyxb38-cf38kof-1301323436
-    apigatewayConf:
-      protocols:
-        - https
+    protocol: https
 
 api:
   component: '@serverless/tencent-express'
