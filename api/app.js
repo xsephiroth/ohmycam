@@ -30,81 +30,59 @@ app.use(cors());
 app.use(express.json());
 
 // cos file sessionKey builder
-const getSessionKey = id => `session-${id}.json`;
+const getSessionMasterKey = roomId => `session-${roomId}.master.json`;
+const getSessionJoinKey = roomId => `session-${roomId}.join.json`;
 
 // create a new room
 app.post('/room', async (_, res) => {
   const roomId = uniqid.time();
-  const sessionKey = getSessionKey(roomId);
-  try {
-    await cosPutObject({ Key: sessionKey, Body: JSON.stringify({}) });
-    res.json({ roomId });
-  } catch (e) {
-    console.error('put session object error:', e);
-    res.sendStatus(500);
-  }
+  res.json({ roomId });
 });
 
 // update sdp to store
 app.post('/room/:roomId', async (req, res) => {
   const roomId = req.params.roomId;
-  const { sdp } = req.body;
+  const { sdp, join } = req.body;
   if (!sdp) {
     res.sendStatus(400);
     return;
   }
 
-  const sessionKey = getSessionKey(roomId);
-
-  // get session from cos
-  let session;
-  try {
-    const { Body } = await cosGetObject({ Key: sessionKey });
-    session = JSON.parse(Body);
-  } catch (e) {
-    if (e.statusCode && e.statusCode === 404) {
-      res.sendStatus(404);
-      return;
-    }
-    console.error('put session object error:', e);
-    res.sendStatus(500);
-    return;
-  }
-
-  const userId = uniqid();
+  const sessionKey = join
+    ? getSessionJoinKey(roomId)
+    : getSessionMasterKey(roomId);
 
   // merge session
   try {
     await cosPutObject({
       Key: sessionKey,
-      Body: JSON.stringify({
-        ...session,
-        [userId]: sdp
-      })
+      Body: JSON.stringify({ sdp })
     });
   } catch (e) {
     console.error('put session object error:', e);
     res.sendStatus(500);
   }
 
-  res.json({ userId });
+  res.sendStatus(204);
 });
 
 app.get('/room/:roomId', async (req, res) => {
   const roomId = req.params.roomId;
-  const userId = req.query.userId;
-  if (!roomId || !userId) {
+  const join = req.query.join;
+  if (!roomId) {
     res.sendStatus(400);
     return;
   }
 
-  const sessionKey = getSessionKey(roomId);
-
-  // get session from cos
-  let session;
+  // get another sdp from cos
+  const sessionKey = join
+    ? getSessionMasterKey(roomId)
+    : getSessionJoinKey(roomId);
   try {
     const { Body } = await cosGetObject({ Key: sessionKey });
-    session = JSON.parse(Body);
+    const { sdp } = JSON.parse(Body);
+    res.json({ sdp });
+    return;
   } catch (e) {
     // err not exists
     if (e.statusCode && e.statusCode === 404) {
@@ -116,10 +94,6 @@ app.get('/room/:roomId', async (req, res) => {
     res.sendStatus(500);
     return;
   }
-
-  // return another sdp
-  const another = Object.entries(session).find(u => u[0] !== userId);
-  res.json({ sdp: another ? another[1] : null });
 });
 
 // delete session
@@ -131,12 +105,11 @@ app.delete('/room/:roomId', async (req, res) => {
   }
 
   try {
-    await cosDeleteObject({ Key: getSessionKey(roomId) });
-  } catch (e) {
-    console.error('delete cos object error:', e);
-    res.sendStatus(500);
-    return;
-  }
+    await Promise.all([
+      cosDeleteObject({ Key: getSessionMasterKey(roomId) }),
+      cosDeleteObject({ Key: getSessionJoinKey(roomId) })
+    ]);
+  } catch (e) {}
 
   res.sendStatus(204);
 });
