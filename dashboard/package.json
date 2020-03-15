@@ -8,13 +8,15 @@
     "start": "next start",
     "export": "next export",
     "preexport": "yarn build",
-    "lint": "prettier --single-quote --write '*/**/*.js'"
+    "lint": "prettier --single-quote --write */**/*.js"
   },
   "dependencies": {
     "next": "9.3.0",
     "prettier": "^1.19.1",
     "react": "16.13.0",
-    "react-dom": "16.13.0",
-    "styled-components": "^5.0.1"
+    "react-dom": "16.13.0"
+  },
+  "devDependencies": {
+    "sass": "^1.26.3"
   }
 }
