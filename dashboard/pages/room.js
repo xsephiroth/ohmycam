@@ -140,17 +140,17 @@ const useJoinUser = (roomId, player) => {
       }, 5000);
     };
 
+    let localStream;
     navigator.mediaDevices
       .getUserMedia({ audio: true, video: true })
       .then(stream => {
         player.current.srcObject = null;
         player.current.srcObject = stream;
         player.current.autoplay = true;
-        return stream;
+
+        stream.getTracks().map(track => peer.addTrack(track, stream));
+        localStream = stream;
       })
-      .then(stream =>
-        stream.getTracks().map(track => peer.addTrack(track, stream))
-      )
       .then(connectRemote)
       .catch(e => {
         console.error(`getUserMedia error: ${e}`);
@@ -159,6 +159,7 @@ const useJoinUser = (roomId, player) => {
 
     return () => {
       clearInterval(intervalId);
+      localStream && localStream.getTracks().map(track => track.stop());
       peer.close();
       if (player.current) player.current.srcObject = null;
     };
