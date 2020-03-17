@@ -1,141 +1,192 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
+
+const createPeerConnection = () => {
+  return new RTCPeerConnection({
+    iceServers: [
+      { urls: 'stun:stun1.google.com:19302' },
+      { urls: 'stun:stun2.google.com:19302' }
+    ]
+  });
+};
+
+const apiPutSdp = (roomId, sdp, isJoin = false) => {
+  const payload = { sdp };
+  if (isJoin) {
+    payload['join'] = true;
+  }
+
+  return fetch(`${process.env.apiUrl}/room/${roomId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+};
+
+const apiGetSdp = (roomId, isJoin = false) => {
+  return fetch(
+    `${process.env.apiUrl}/room/${roomId}${isJoin ? '?join=1' : ''}`
+  );
+};
+
+const useMasterUser = (roomId, player) => {
+  useEffect(() => {
+    if (!roomId || !player.current) return;
+
+    let intervalId = 0;
+
+    const peer = createPeerConnection();
+    peer.oniceconnectionstatechange = () =>
+      console.log(peer.iceConnectionState);
+
+    const connectRemote = () => {
+      intervalId = setInterval(async () => {
+        try {
+          const res = await apiGetSdp(roomId, false);
+
+          if (!res.ok) return;
+
+          // got remote response, no more interval check
+          clearInterval(intervalId);
+
+          const { sdp } = await res.json();
+          await peer.setRemoteDescription(new RTCSessionDescription(sdp));
+          console.log('got remote description');
+        } catch (e) {
+          console.error(e);
+        }
+      }, 5000);
+    };
+
+    peer.onicecandidate = async e => {
+      if (e.candidate === null) {
+        try {
+          const res = await apiPutSdp(roomId, peer.localDescription, false);
+
+          if (!res.ok) {
+            console.error(res.statusText);
+            return;
+          }
+
+          connectRemote();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+
+    peer.ontrack = e => {
+      player.current.srcObject = null;
+      player.current.srcObject = e.streams?.[0];
+      player.current.autoplay = true;
+    };
+
+    peer
+      .createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true
+      })
+      .then(offer => peer.setLocalDescription(offer))
+      .catch(err => {
+        console.error('create offer error', err);
+      });
+
+    return () => {
+      clearInterval(intervalId);
+      peer.close();
+      if (player.current) player.current.srcObject = null;
+    };
+  }, [roomId, player]);
+};
+
+const useJoinUser = (roomId, player) => {
+  useEffect(() => {
+    if (!roomId || !player.current) return;
+
+    let intervalId = 0;
+
+    const peer = createPeerConnection();
+    peer.oniceconnectionstatechange = () =>
+      console.log(peer.iceConnectionState);
+
+    peer.onicecandidate = async e => {
+      if (e.candidate === null) {
+        apiPutSdp(roomId, peer.localDescription, true)
+          .then(res => !res.ok && console.error(res.statusText))
+          .catch(e => console.error(e));
+      }
+    };
+
+    const connectRemote = () => {
+      intervalId = setInterval(async () => {
+        try {
+          const res = await apiGetSdp(roomId, true);
+
+          if (!res.ok) return;
+
+          // got remote response, no more interval check
+          clearInterval(intervalId);
+
+          const { sdp } = await res.json();
+          await peer.setRemoteDescription(new RTCSessionDescription(sdp));
+          console.log('got remote description');
+
+          const answer = await peer.createAnswer();
+          await peer.setLocalDescription(answer);
+        } catch (e) {
+          console.error(e);
+        }
+      }, 5000);
+    };
+
+    navigator.mediaDevices
+      .getUserMedia({ audio: true, video: true })
+      .then(stream => {
+        player.current.srcObject = null;
+        player.current.srcObject = stream;
+        player.current.autoplay = true;
+        return stream;
+      })
+      .then(stream =>
+        stream.getTracks().map(track => peer.addTrack(track, stream))
+      )
+      .then(connectRemote)
+      .catch(e => {
+        console.error(`getUserMedia error: ${e}`);
+        alert('get media error');
+      });
+
+    return () => {
+      clearInterval(intervalId);
+      peer.close();
+      if (player.current) player.current.srcObject = null;
+    };
+  }, [roomId, player]);
+};
 
 const Room = () => {
   const {
     query: { roomId, join }
   } = useRouter();
-  console.log(roomId, join);
 
-  const localVideoRef = useRef();
-  const remoteVideoRef = useRef();
+  const videoRef = useRef(null);
 
-  const localPeer = useRef();
-  const localStream = useRef();
-
-  const getRemoteSdp = useCallback(async () => {
-    const res = await fetch(
-      `${process.env.apiUrl}/room/${roomId}${join ? '?join=1' : ''}`,
-      {
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
-    if (res.status !== 200) {
-      return null;
-    }
-    const { sdp } = await res.json();
-    return sdp;
-  }, [roomId, join]);
-
-  // create session description
-  useEffect(() => {
-    let getRemoteSdpIntervalId = 0;
-
-    if (!roomId) return;
-
-    const onIceCandidate = async (e) => {
-      console.log(e);
-      if (e.candidate === null) {
-        // send local sdp to server
-        try {
-          const putRres = await fetch(
-            `${process.env.apiUrl}/room/${roomId}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                sdp: localPeer.current.localDescription,
-                join
-              })
-            }
-          );
-          if (putRres.status !== 204) {
-            console.log('put sdp failed');
-            return;
-          }
-
-          let remoteSdp = await getRemoteSdp();
-          if (remoteSdp) {
-            localPeer.current
-              .setRemoteDescription(new RTCSessionDescription(rSdp))
-              .then(() => console.log('set remote description success'))
-              .catch(e => console.error(err));
-          } else {
-            getRemoteSdpIntervalId = setInterval(() => {
-              getRemoteSdp().then(rSdp => {
-                if (rSdp) {
-                  clearInterval(getRemoteSdpIntervalId);
-                  localPeer.current
-                    .setRemoteDescription(new RTCSessionDescription(rSdp))
-                    .then(() => console.log('set remote description success'))
-                    .catch(e => console.error(err));
-                }
-              });
-            }, 5000);
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }
-
-    const run = async () => {
-      try {
-        localStream.current = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-          video: true
-        });
-        localVideoRef.current.srcObject = localStream.current;
-        localVideoRef.current.autoplay = true;
-      } catch (e) {
-        console.error(`getUserMedia() error: ${e}`);
-        alert('get media error');
-        return;
-      }
-
-      localPeer.current = new RTCPeerConnection();
-      localPeer.current.addEventListener('track', e => {
-        remoteVideoRef.current.srcObject = e.streams[0];
-        remoteVideoRef.current.autoplay = true;
-      });
-      localPeer.current.addEventListener('icecandidate', onIceCandidate);
-
-      localStream.current
-        .getTracks()
-        .map(track => localPeer.current.addTrack(track, localStream.current));
-
-      const localSdp = await localPeer.current.createOffer({
-        offerToReceiveAudio: true,
-        offerToReceiveVideo: true
-      });
-      localPeer.current.setLocalDescription(localSdp);
-    };
-
-    run().catch();
-
-    return () => {
-      clearInterval(getRemoteSdpIntervalId);
-      localPeer.current &&
-        localPeer.current.removeEventListener('icecandidate', onIceCandidate);
-      localPeer.current && localPeer.current.close();
-    };
-  }, [roomId]);
+  if (!!join) {
+    useJoinUser(roomId, videoRef);
+  } else {
+    useMasterUser(roomId, videoRef);
+  }
 
   return (
     <Layout>
       <div>
         <div>Room:{roomId}</div>
         <video
-          ref={localVideoRef}
+          ref={videoRef}
           src="https://www.w3schools.com/html/mov_bbb.mp4"
           muted
-        ></video>
-        <video
-          ref={remoteVideoRef}
-          src="https://www.w3schools.com/html/mov_bbb.mp4"
-          muted
-        ></video>
+        />
       </div>
     </Layout>
   );
