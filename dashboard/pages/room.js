@@ -193,7 +193,7 @@ const Room = () => {
     <Layout>
       <div>
         <div>Room:{roomId}</div>
-        {!join && <img src={qrCode} alt="QRCode" />}
+        {!join && qrCode && <img src={qrCode} alt="QRCode" />}
         <video
           ref={videoRef}
           src="https://www.w3schools.com/html/mov_bbb.mp4"
