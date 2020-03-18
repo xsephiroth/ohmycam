@@ -197,7 +197,7 @@ const Room = () => {
         <video
           ref={videoRef}
           src="https://www.w3schools.com/html/mov_bbb.mp4"
-          muted
+          playsInline
         />
       </div>
     </Layout>
