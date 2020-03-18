@@ -147,6 +147,7 @@ const useJoinUser = (roomId, player) => {
       .then(stream => {
         player.current.srcObject = null;
         player.current.srcObject = stream;
+        player.current.muted = true;
         player.current.autoplay = true;
 
         stream.getTracks().map(track => peer.addTrack(track, stream));
