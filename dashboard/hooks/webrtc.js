@@ -136,11 +136,12 @@ const useApiGetSdpInterval = (roomId, isJoin = false, duration = 5000) => {
 /**
  *
  * @param peer {RTCPeerConnection|null}
+ * @param options {RTCOfferOptions|null}
  */
-const useOffer = peer => {
+const useOffer = (peer, options) => {
   useEffect(() => {
     peer
-      ?.createOffer()
+      ?.createOffer(options)
       .then(offer => peer.setLocalDescription(offer))
       .catch(e => console.error(e));
   }, [peer]);
@@ -283,7 +284,7 @@ export const useMasterUser = (videoRef, roomId) => {
   usePlayRemoteTrack(peer, videoRef);
 
   const gotCandidates = useIceCandidateNull(peer);
-  useOffer(peer);
+  useOffer(peer, {offerToReceiveVideo: true, offerToReceiveAudio: true});
 
   const [offerSendRoomId, setOfferSendRoomId] = useState(null);
   const offerIsSend = useOfferSend(gotCandidates, peer, roomId);
