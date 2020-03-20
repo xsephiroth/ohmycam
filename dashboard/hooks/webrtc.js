@@ -272,6 +272,11 @@ const usePlayLocalMediaStream = (videoRef, stream) => {
   }, [videoRef, stream]);
 };
 
+const offerOptions = {
+  offerToReceiveVideo: true,
+  offerToReceiveAudio: true
+};
+
 /**
  *
  * @param videoRef {current: {HTMLVideoElement}}
@@ -284,7 +289,7 @@ export const useMasterUser = (videoRef, roomId) => {
   usePlayRemoteTrack(peer, videoRef);
 
   const gotCandidates = useIceCandidateNull(peer);
-  useOffer(peer, {offerToReceiveVideo: true, offerToReceiveAudio: true});
+  useOffer(peer, offerOptions);
 
   const [offerSendRoomId, setOfferSendRoomId] = useState(null);
   const offerIsSend = useOfferSend(gotCandidates, peer, roomId);
@@ -296,6 +301,11 @@ export const useMasterUser = (videoRef, roomId) => {
     if (!peer || !remoteSdp) return;
     peer.setRemoteDescription(remoteSdp).catch(e => console.error(e));
   }, [peer, remoteSdp]);
+};
+
+const joinUserMediaConstraints = {
+  video: true,
+  audio: true
 };
 
 /**
@@ -312,7 +322,7 @@ export const useJoinUser = (videoRef, roomId) => {
   useAnswer(peer, remoteSdp);
   useAnswerSend(gotCandidates, peer, roomId);
 
-  const stream = useMediaStream({ video: true, audio: true });
+  const stream = useMediaStream(joinUserMediaConstraints);
   usePlayLocalMediaStream(videoRef, stream);
   usePeerGotStream(peer, stream);
 };
