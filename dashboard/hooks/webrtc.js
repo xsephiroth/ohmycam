@@ -222,7 +222,6 @@ const usePlayRemoteTrack = (peer, videoRef) => {
       peer.ontrack = e => {
         videoRef.current.srcObject = null;
         videoRef.current.srcObject = e.streams?.[0];
-        videoRef.current.autoplay = true;
       };
 
     return () => {
@@ -262,8 +261,6 @@ const usePlayLocalMediaStream = (videoRef, stream) => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = null;
       videoRef.current.srcObject = stream;
-      videoRef.current.muted = true;
-      videoRef.current.autoplay = true;
     }
     return () => {
       if (videoRef.current) videoRef.current.srcObject = null;
