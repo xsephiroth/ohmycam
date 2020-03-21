@@ -15,14 +15,14 @@ const Home = () => {
         }
       });
       const data = await res.json();
-      Router.push({ pathname: '/room', query: { roomId: data.roomId } });
+      Router.push({ pathname: '/room/master', query: { roomId: data.roomId } });
     } catch (e) {
       console.error(e);
     }
   };
 
   const joinRoom = () => {
-    Router.push({ pathname: '/room', query: { roomId, join: true } });
+    Router.push({ pathname: '/room/join', query: { roomId } });
   };
 
   return (
