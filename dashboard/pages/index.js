@@ -3,7 +3,10 @@ import Router from 'next/router';
 import Layout from '../components/Layout';
 import Button from '../components/Button';
 
+import styles from './index.module.scss';
+
 const Home = () => {
+  const [joinUser, setJoinUser] = useState(false);
   const [roomId, setRoomId] = useState('');
 
   const createNewRoom = async () => {
@@ -27,10 +30,29 @@ const Home = () => {
 
   return (
     <Layout>
-      <div>
-        <input value={roomId} onChange={e => setRoomId(e.target.value)} />
-        <Button onClick={createNewRoom}>Create</Button>
-        <Button onClick={joinRoom}>Join</Button>
+      <div className={styles.Container}>
+        <div className={styles.Wrapper}>
+          <div className={styles.Left}>hello</div>
+          <div className={styles.UserForm}>
+            {joinUser ? (
+              <>
+                <input
+                  className={styles.RoomIdInput}
+                  placeholder="房间ID"
+                  value={roomId}
+                  onChange={e => setRoomId(e.target.value)}
+                />
+                <Button onClick={joinRoom}>加入</Button>
+                <a onClick={() => setJoinUser(false)}>创建房间?</a>
+              </>
+            ) : (
+              <>
+                <Button onClick={createNewRoom}>创建</Button>
+                <a onClick={() => setJoinUser(true)}>加入房间?</a>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </Layout>
   );
