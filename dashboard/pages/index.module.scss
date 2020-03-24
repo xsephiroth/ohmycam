@@ -1,13 +1,4 @@
-@mixin flex {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.Container {
-  @include flex;
-  min-height: 100vh;
-}
+@import 'share';
 
 .Wrapper {
   @include flex;
