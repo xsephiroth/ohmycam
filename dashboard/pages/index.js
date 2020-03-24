@@ -6,7 +6,7 @@ import Button from '../components/Button';
 import styles from './index.module.scss';
 
 const Home = () => {
-  const [joinUser, setJoinUser] = useState(false);
+  const [isJoinUser, setIsJoinUser] = useState(false);
   const [roomId, setRoomId] = useState('');
 
   const createNewRoom = async () => {
@@ -35,9 +35,20 @@ const Home = () => {
     <Layout>
       <div className={styles.Container}>
         <div className={styles.Wrapper}>
-          <div className={styles.Left}>hello</div>
+          <div className={styles.Left}>
+            {isJoinUser ? (
+              <>
+                <img src="/aperture-art-blur-camera-414781.jpg" alt="join" />
+              </>
+            ) : (
+              <img
+                src="/design-templates-on-a-flat-screen-computer-monitor-1714202.jpg"
+                alt="watch"
+              />
+            )}
+          </div>
           <div className={styles.UserForm}>
-            {joinUser ? (
+            {isJoinUser ? (
               <>
                 <input
                   className={styles.RoomIdInput}
@@ -46,12 +57,12 @@ const Home = () => {
                   onChange={e => setRoomId(e.target.value)}
                 />
                 <Button onClick={joinRoom}>加入</Button>
-                <a onClick={() => setJoinUser(false)}>创建房间?</a>
+                <a onClick={() => setIsJoinUser(false)}>创建房间?</a>
               </>
             ) : (
               <>
                 <Button onClick={createNewRoom}>创建</Button>
-                <a onClick={() => setJoinUser(true)}>加入房间?</a>
+                <a onClick={() => setIsJoinUser(true)}>加入房间?</a>
               </>
             )}
           </div>
