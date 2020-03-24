@@ -18,14 +18,17 @@ const Home = () => {
         }
       });
       const data = await res.json();
-      Router.push({ pathname: '/room/master', query: { roomId: data.roomId } });
+      await Router.push({
+        pathname: '/room/master',
+        query: { roomId: data.roomId }
+      });
     } catch (e) {
       console.error(e);
     }
   };
 
-  const joinRoom = () => {
-    Router.push({ pathname: '/room/join', query: { roomId } });
+  const joinRoom = async () => {
+    await Router.push({ pathname: '/room/join', query: { roomId } });
   };
 
   return (
