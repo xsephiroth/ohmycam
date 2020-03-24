@@ -41,11 +41,11 @@ const Home = () => {
                 <img src="/aperture-art-blur-camera-414781.jpg" alt="join" />
               </>
             ) : (
-              <img
-                src="/design-templates-on-a-flat-screen-computer-monitor-1714202.jpg"
-                alt="watch"
-              />
-            )}
+                <img
+                  src="/design-templates-on-a-flat-screen-computer-monitor-1714202.jpg"
+                  alt="watch"
+                />
+              )}
           </div>
           <div className={styles.UserForm}>
             {isJoinUser ? (
@@ -60,11 +60,11 @@ const Home = () => {
                 <a onClick={() => setIsJoinUser(false)}>创建房间?</a>
               </>
             ) : (
-              <>
-                <Button onClick={createNewRoom}>创建</Button>
-                <a onClick={() => setIsJoinUser(true)}>加入房间?</a>
-              </>
-            )}
+                <>
+                  <Button onClick={createNewRoom}>创建</Button>
+                  <a onClick={() => setIsJoinUser(true)}>加入房间?</a>
+                </>
+              )}
           </div>
         </div>
       </div>
