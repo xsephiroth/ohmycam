@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 
+if (typeof window !== 'undefined') {
+  const adapter = require('webrtc-adapter');
+}
+
 /**
  *
  * @returns {RTCPeerConnection}
