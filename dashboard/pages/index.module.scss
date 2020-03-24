@@ -6,13 +6,7 @@
 
 .Container {
   @include flex;
-
   min-height: 100vh;
-  background: linear-gradient(
-    21deg,
-    rgba(71, 90, 198, 1) 0%,
-    rgba(184, 91, 186, 1) 100%
-  );
 }
 
 .Wrapper {
