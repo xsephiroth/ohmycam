@@ -1,0 +1,57 @@
+@import '../share';
+
+.Box {
+  @include flex;
+
+  width: 500px;
+  background-color: white;
+  padding: 2em;
+  border-radius: 5px;
+
+  @media (max-width: 1000px) {
+    margin-left: 1em;
+    margin-right: 1em;
+  }
+
+  &__Playing {
+    padding: 0.3em;
+    max-width: 100%;
+  }
+}
+
+.QRCode {
+  border-radius: 15px;
+  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.2);
+}
+
+.RoomId {
+  margin-top: 1em;
+  text-align: center;
+  font-size: 19px;
+  cursor: pointer;
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  position: relative;
+  &::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    content: '';
+    width: 25px;
+    height: 25px;
+    background-image: url('/clipboard.png');
+    background-size: cover;
+  }
+}
+
+.Video {
+  width: 0;
+  height: 0;
+
+  &__Playing {
+    width: 100%;
+    height: auto;
+  }
+}
