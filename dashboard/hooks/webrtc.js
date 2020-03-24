@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  *
@@ -26,13 +26,24 @@ const useWebRTCPeerConnection = () => {
 /**
  *
  * @param peer {RTCPeerConnection|null}
+ * @param roomId {string}
  */
-const useIceCandidateStateChangeLog = peer => {
+const useIceCandidateStateChange = (peer, roomId) => {
+  const requested = useRef(false);
+
   useEffect(() => {
-    if (peer)
-      peer.oniceconnectionstatechange = () =>
+    if (peer && roomId)
+      peer.oniceconnectionstatechange = () => {
         console.log(peer.iceConnectionState);
-  }, [peer]);
+
+        if (
+          (!requested.current && peer.iceConnectionState === 'connected') ||
+          'disconnected'
+        ) {
+          apiClearSdp(roomId).finally(() => (requested.current = true));
+        }
+      };
+  }, [peer, roomId]);
 };
 
 /**
@@ -97,6 +108,17 @@ const apiGetSdp = (roomId, isJoin = false) => {
   return fetch(
     `${process.env.apiUrl}/room/${roomId}${isJoin ? '?join=1' : ''}`
   );
+};
+
+/**
+ *
+ * @param roomId {string}
+ * @returns {Promise<Response>}
+ */
+const apiClearSdp = roomId => {
+  return fetch(`${process.env.apiUrl}/room/${roomId}`, {
+    method: 'DELETE'
+  });
 };
 
 /**
@@ -281,7 +303,7 @@ const offerOptions = {
  */
 export const useMasterUser = (videoRef, roomId) => {
   const peer = useWebRTCPeerConnection();
-  useIceCandidateStateChangeLog(peer);
+  useIceCandidateStateChange(peer, roomId);
 
   usePlayRemoteTrack(peer, videoRef);
 
@@ -312,7 +334,7 @@ const joinUserMediaConstraints = {
  */
 export const useJoinUser = (videoRef, roomId) => {
   const peer = useWebRTCPeerConnection();
-  useIceCandidateStateChangeLog(peer);
+  useIceCandidateStateChange(peer, roomId);
   const gotCandidates = useIceCandidateNull(peer);
 
   const remoteSdp = useApiGetSdpInterval(roomId, true, 5000);
