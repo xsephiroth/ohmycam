@@ -7,6 +7,7 @@
   background-color: white;
   padding: 2em;
   border-radius: 5px;
+  position: relative;
 
   @media (max-width: 1000px) {
     margin-left: 1em;
@@ -17,6 +18,13 @@
     padding: 0.3em;
     max-width: 100%;
   }
+}
+
+.IceStateIcon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 1em;
 }
 
 .QRCode {

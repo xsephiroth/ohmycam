@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import QRCode from 'qrcode';
 import classNames from 'classnames/bind';
 import Layout from '../../components/Layout';
+import IceStateIcon from '../../components/IceStateIcon';
 import { useMasterUser } from '../../hooks/webrtc';
 
 import styles from './room.module.scss';
@@ -16,7 +17,7 @@ const Master = () => {
 
   const videoRef = useRef(null);
 
-  useMasterUser(videoRef, roomId);
+  const { iceConnectionState } = useMasterUser(videoRef, roomId);
 
   const [joinHref, setJoinHref] = useState('');
   useEffect(() => {
@@ -52,6 +53,13 @@ const Master = () => {
     <Layout>
       <div className={styles.Container}>
         <div className={cx({ Box: true, Box__Playing: canplay })}>
+          <IceStateIcon
+            className={cx('IceStateIcon')}
+            waiting={iceConnectionState === ''}
+            checking={iceConnectionState === 'checking'}
+            connected={iceConnectionState === 'connected'}
+            disconnected={iceConnectionState === 'disconnected'}
+          />
           {qrCode && (
             <div>
               <img className={styles.QRCode} src={qrCode} alt="QRCode" />
