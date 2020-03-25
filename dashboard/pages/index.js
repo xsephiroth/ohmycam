@@ -42,14 +42,14 @@ const Home = () => {
                 <h5>开启摄像头，成为内网监控设备</h5>
               </>
             ) : (
-                <>
-                  <img
-                    src="/design-templates-on-a-flat-screen-computer-monitor-1714202.jpg"
-                    alt="watch"
-                  />
-                  <h5>创建房间，接入内网监控设备</h5>
-                </>
-              )}
+              <>
+                <img
+                  src="/design-templates-on-a-flat-screen-computer-monitor-1714202.jpg"
+                  alt="watch"
+                />
+                <h5>创建房间，接入内网监控设备</h5>
+              </>
+            )}
           </div>
           <div className={styles.UserForm}>
             {isJoinUser ? (
@@ -64,11 +64,11 @@ const Home = () => {
                 <a onClick={() => setIsJoinUser(false)}>创建房间?</a>
               </>
             ) : (
-                <>
-                  <Button onClick={createNewRoom}>创建</Button>
-                  <a onClick={() => setIsJoinUser(true)}>加入房间?</a>
-                </>
-              )}
+              <>
+                <Button onClick={createNewRoom}>创建</Button>
+                <a onClick={() => setIsJoinUser(true)}>加入房间?</a>
+              </>
+            )}
           </div>
         </div>
       </div>
