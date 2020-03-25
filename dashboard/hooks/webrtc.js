@@ -33,12 +33,14 @@ const useWebRTCPeerConnection = () => {
  * @param roomId {string}
  */
 const useIceCandidateStateChange = (peer, roomId) => {
+  const [iceState, setIceState] = useState('');
   const requested = useRef(false);
 
   useEffect(() => {
     if (peer && roomId)
       peer.oniceconnectionstatechange = () => {
         console.log(peer.iceConnectionState);
+        setIceState(peer.iceConnectionState);
 
         if (
           (!requested.current && peer.iceConnectionState === 'connected') ||
@@ -48,6 +50,8 @@ const useIceCandidateStateChange = (peer, roomId) => {
         }
       };
   }, [peer, roomId]);
+
+  return iceState;
 };
 
 /**
@@ -307,7 +311,7 @@ const offerOptions = {
  */
 export const useMasterUser = (videoRef, roomId) => {
   const peer = useWebRTCPeerConnection();
-  useIceCandidateStateChange(peer, roomId);
+  const iceConnectionState = useIceCandidateStateChange(peer, roomId);
 
   usePlayRemoteTrack(peer, videoRef);
 
@@ -324,6 +328,10 @@ export const useMasterUser = (videoRef, roomId) => {
     if (!peer || !remoteSdp) return;
     peer.setRemoteDescription(remoteSdp).catch(e => console.error(e));
   }, [peer, remoteSdp]);
+
+  return {
+    iceConnectionState
+  };
 };
 
 const joinUserMediaConstraints = {
@@ -338,7 +346,7 @@ const joinUserMediaConstraints = {
  */
 export const useJoinUser = (videoRef, roomId) => {
   const peer = useWebRTCPeerConnection();
-  useIceCandidateStateChange(peer, roomId);
+  const iceConnectionState = useIceCandidateStateChange(peer, roomId);
   const gotCandidates = useIceCandidateNull(peer);
 
   const remoteSdp = useApiGetSdpInterval(roomId, true, 5000);
@@ -348,4 +356,8 @@ export const useJoinUser = (videoRef, roomId) => {
   const stream = useMediaStream(joinUserMediaConstraints);
   usePlayLocalMediaStream(videoRef, stream);
   usePeerGotStream(peer, stream);
+
+  return {
+    iceConnectionState
+  };
 };
