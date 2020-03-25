@@ -1,15 +1,6 @@
 name: ohmycam
 
 dashboard:
-  component: '@serverless/tencent-website'
-  inputs:
-    code:
-      src: ./dashboard/out
-      index: index.html
-      error: index.html
-    bucketName: 7xyxb38-cf38kof-1301323436
-    protocol: https
-
 api:
   component: '@serverless/tencent-express'
   inputs:
