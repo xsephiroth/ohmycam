@@ -1,0 +1,48 @@
+.Icon {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+
+  background-color: var(--color);
+  box-shadow: 0 0 2px 1px var(--color);
+}
+
+.Waiting {
+  --color: #b85bba;
+  animation: blink 4s infinite;
+}
+
+.Checking {
+  --color: #f1c40f;
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+.Connected {
+  --color: #2ecc71;
+  animation: grow 1s;
+}
+
+.Disconnected {
+  --color: #e74c3c;
+  animation: grow 1s;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.5);
+  }
+}
+
+@keyframes grow {
+  from {
+    transform: scale(0.5);
+  }
+  to {
+    transform: scale(1);
+  }
+}
